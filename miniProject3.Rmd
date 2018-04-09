@@ -42,6 +42,10 @@ library(lwgeom)
 
 Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
 
+```{r message =FALSE, warning = FALSE}
+elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
+```
+
 
 ```{r message = FALSE, warning = FALSE}
 #change the color name in Macleish to lower case so that r can understand it
