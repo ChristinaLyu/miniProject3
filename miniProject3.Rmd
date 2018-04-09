@@ -43,7 +43,7 @@ library(lwgeom)
 Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 #change the color name in Macleish to lower case so that r can understand it
 newTrails <- macleish_layers[["trails"]] %>%
   mutate(colorName = tolower(color))
@@ -62,7 +62,7 @@ m
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 #calculate each part of the length of the trail
 length <- 
   macleish_layers[["trails"]] %>%
@@ -88,7 +88,7 @@ newTrails %>%
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 crossStream <- 
   macleish_layers[["trails"]] %>%
   st_intersection(macleish_layers[["streams"]])
@@ -103,7 +103,7 @@ leaflet() %>%
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 elevation <- 
   macleish_layers[["challenge_courses"]] %>%
   st_intersection(macleish_layers[["trails"]])
