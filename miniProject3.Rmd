@@ -1,6 +1,6 @@
 ---
 title: "Discriminating trails to the Macleish center"
-author: "Christina Ly & Caroline Li"
+author: "Christina Ly & Caroline Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
 date: "3/7/2018"
 output: 
   html_document:
