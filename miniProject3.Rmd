@@ -48,8 +48,7 @@ elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 
 
 ```{r}
-leaflet() %>%
-  addPolygons(data = st_geometry(elevation))
+plot(st_geometry(elevation))
 
 ```
 
