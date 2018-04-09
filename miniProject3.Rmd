@@ -42,8 +42,14 @@ library(lwgeom)
 
 Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
 
-```{r message =FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE}
 elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
+```
+
+```{r}
+leaflet() %>%
+  addPolygons(data = st_geometry(elevation))
+
 ```
 
 
