@@ -1,22 +1,132 @@
 ---
-title: "miniProject3"
-author: "Christina Lyu and Sicong Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
-date: "4/6/2018"
-output: html_document:
+title: "Discriminating trails to the Macleish center"
+author: "Christina Ly & Caroline Li"
+date: "3/7/2018"
+output: 
+  html_document:
     code_folding: hide
-  
 ---
+for having an .Rmd that compiles without errors
+xxx+1 unnecessary messages from R are hidden from being displayed in the HTML 
+xxx+1 for using code folding to keep your code hidden, but still make it available.
+xxx+1 for including a problem statement (what are you trying to figure out?)
+xxx+1 for readable, well-documented code (i.e. appropriate comments, using line breaks, breaking code up into logical chunks) that conforms to a style guide
+xxx+1 for including a catchy and/or engaging title
+xxx+1 for creating a leaflet map
+Average
++1 for having at least 500 words and no more than 800 words
++1 for using an appropriate visual mapping (incl. choice of points/lines/polygons, as well as colors and/or icons, etc.)
++1 for providing a clear, concise description of the data you used
++1 for using more than one data layer from the macleish package in your analysis (e.g. both vegetation and elevation data)
++1 for including relevant external information in your analysis
++1 for reporting at least one actionable recommendation (what should Smith DO with your findings?)
++1 for using a GitHub repository and including a link to it in the footnotes
+Advanced
++1 for using the Issues tab on GitHub to plan your project
++1 for including a short discussion on the resources necessary to implement your recommendation:
+what will it cost?
+how long will it take?
+are there any concerns about environmental impact?
+do you see any major roadblocks?
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(macleish)
+In this project we are trying to be able to make classifications of the trails based on their length and change in elevation. We would also try to make one function that would simplify the process of classification.
+
+```{r packets, message = FALSE, warning = FALSE}
+library(tidyverse)
 library(sf)
+library(macleish)
 library(leaflet)
+library(dplyr)
+library(lwgeom)
 ```
+
+Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
+
 
 ```{r}
-leaflet(data = whately_2015) %>%
+#change the color name in Macleish to lower case so that r can understand it
+newTrails <- macleish_layers[["trails"]] %>%
+  mutate(colorName = tolower(color))
+
+markers <- 
+  macleish_layers[["trails"]] %>%
+  group_by(name) %>%
+  filter(geometry == min(geometry))
+#interactive map with buildings and the trails in Macleish
+m <- leaflet() %>%
   addTiles() %>%
-  addPolygons(data = macleish_layers[["trails"]])  
+  addPolygons(data = macleish_layers[["buildings"]], popup = ~name) %>%
+  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) 
+
+m
 ```
+
+
+```{r}
+#calculate each part of the length of the trail
+length <- 
+  macleish_layers[["trails"]] %>%
+  group_by(name) %>%
+  st_length()
+
+#make a new column in newTrails data frame
+newTrails <- 
+  newTrails %>%
+  mutate(length = 1)
+
+#change the value in the length column to the corresponding value in length set
+for (k in 1:nrow(newTrails)){
+  newTrails$length[k] <- length[k]
+}
+
+#get the total length of each trail
+newTrails %>%
+  group_by(name) %>% 
+  summarise(total = sum(length)) %>%
+  arrange(desc(total))
+
+```
+
+
+```{r}
+crossStream <- 
+  macleish_layers[["trails"]] %>%
+  st_intersection(macleish_layers[["streams"]])
+
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = macleish_layers[["streams"]]) %>%
+  addPolylines(data = macleish_layers[["trails"]], color = "brown") %>%
+  addPolygons(data = macleish_layers[["boundary"]], color = "green") %>%
+  addMarkers(data = st_cast(cross, "POINT"), popup = ~name)
+
+```
+
+
+```{r}
+elevation <- 
+  macleish_layers[["challenge_courses"]] %>%
+  st_intersection(macleish_layers[["trails"]])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
