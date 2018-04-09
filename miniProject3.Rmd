@@ -20,9 +20,9 @@ Average
 +1 for using more than one data layer from the macleish package in your analysis (e.g. both vegetation and elevation data)
 +1 for including relevant external information in your analysis
 +1 for reporting at least one actionable recommendation (what should Smith DO with your findings?)
-+1 for using a GitHub repository and including a link to it in the footnotes
+xxx+1 for using a GitHub repository and including a link to it in the footnotes
 Advanced
-+1 for using the Issues tab on GitHub to plan your project
+xxx+1 for using the Issues tab on GitHub to plan your project
 +1 for including a short discussion on the resources necessary to implement your recommendation:
 what will it cost?
 how long will it take?
