@@ -49,8 +49,33 @@ elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 
 ```{r}
 plot(st_geometry(elevation))
-
 ```
+
+```{r}
+devtools::install_github("tidyverse/ggplot2")
+```
+
+
+```{r}
+library(ggplot2)
+elevation %>%
+  filter()
+```
+```{r}
+ggplot(elevation) + 
+  geom_sf(aes(fill = CONTOUR_FT)) + 
+  scale_fill_gradient(low = "#edf8e9", high = "#005a32") 
+ggplot() + 
+  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name))) + 
+  geom_sf(data = macleish_layers[["buildings"]], aes(fill = name))
+```
+```{r}
+ggplot() + 
+  geom_sf(data = elevation, aes(fill = CONTOUR_FT)) + 
+  scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
+  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)))
+```
+
 
 
 ```{r message = FALSE, warning = FALSE}
