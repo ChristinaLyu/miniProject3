@@ -5,6 +5,7 @@ date: "3/7/2018"
 output: 
   html_document:
     code_folding: hide
+    df_print: paged
 ---
 for having an .Rmd that compiles without errors
 xxx+1 unnecessary messages from R are hidden from being displayed in the HTML 
@@ -48,34 +49,22 @@ elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 plot(st_geometry(elevation))
 ```
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 devtools::install_github("tidyverse/ggplot2")
 ```
 
-```{r}
-leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = macleish_layers[["trails"]], popup = ~name) %>%
-  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
-  addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  # ...and an satellite imagery map layer
-  addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
-  # Next you want to add the control to switch between the two
-  addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
-                   options = layersControlOptions(collapsed = F)) 
-```
 
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 library(ggplot2)
 elevation %>%
   filter()
 ```
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 ggplot(elevation) + 
   geom_sf(aes(fill = CONTOUR_FT)) + 
   scale_fill_gradient(low = "#edf8e9", high = "#005a32") 
@@ -83,14 +72,14 @@ ggplot() +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name))) + 
   geom_sf(data = macleish_layers[["buildings"]], aes(fill = name))
 ```
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 ggplot() + 
   geom_sf(data = elevation, aes(fill = CONTOUR_FT)) + 
   scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)))
 ```
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 elevation <- st_transform(elevation, 4326)
 elevInter <- 
   elevation %>%
@@ -102,7 +91,7 @@ ggplot() +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)), lwd = 1.2)
 ```
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = elevInter) %>%
@@ -110,7 +99,7 @@ leaflet() %>%
 ```
 
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 st_transform(elevation, 4326)
 elevation %>%
   st_intersection(macleish_layers[["trails"]])
@@ -135,6 +124,18 @@ m <- leaflet() %>%
 m
 ```
 
+```{r message = FALSE, warning = FALSE}
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = macleish_layers[["trails"]], popup = ~name) %>%
+  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
+  addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
+  # ...and an satellite imagery map layer
+  addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
+  # Next you want to add the control to switch between the two
+  addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
+                   options = layersControlOptions(collapsed = F)) 
+```
 
 ```{r message = FALSE, warning = FALSE}
 #calculate each part of the length of the trail
@@ -183,7 +184,7 @@ elevation <-
   st_intersection(macleish_layers[["trails"]])
 ```
 
-```{r message = FALSE, warning = FALSE}}
+```{r message = FALSE, warning = FALSE}
 trailInter <- 
   elevation %>%
   st_intersection(macleish_layers[["trails"]])
