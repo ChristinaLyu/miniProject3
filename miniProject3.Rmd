@@ -56,7 +56,7 @@ plot(st_geometry(elevation))
 ```
 
 
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
 elevation <- st_transform(elevation, 4326)
 elevInter <- 
   elevation %>%
@@ -64,15 +64,15 @@ elevInter <-
 
 ggplot() + 
   geom_sf(data = elevInter, aes(color = factor(CONTOUR_FT), colors = "Set1")) + 
-  scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
-  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)), lwd = 1.2)
+  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name), alpha = 0.8, lwd = 1.2)) +
+  theme(legend.text=element_text(size=15))
 ```
 
 ```{r message = FALSE, warning = FALSE}
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = elevInter) %>%
-  addPolylines(macleish_layers[["trails"]])
+  addPolylines(data = st_geometry(elevInter)) %>%
+  addPolylines(data = st_geometry(macleish_layers[["trails"]]))
 ```
 
 
@@ -139,27 +139,6 @@ newTrails %>%
 
 ```
 
-
-```{r message = FALSE, warning = FALSE}
-crossStream <- 
-  macleish_layers[["trails"]] %>%
-  st_intersection(macleish_layers[["streams"]])
-
-leaflet() %>%
-  addTiles() %>%
-  addPolylines(data = macleish_layers[["streams"]]) %>%
-  addPolylines(data = macleish_layers[["trails"]], color = "brown") %>%
-  addPolygons(data = macleish_layers[["boundary"]], color = "green") %>%
-  addMarkers(data = st_cast(cross, "POINT"), popup = ~name)
-
-```
-
-
-```{r message = FALSE, warning = FALSE}
-elevation <- 
-  macleish_layers[["challenge_courses"]] %>%
-  st_intersection(macleish_layers[["trails"]])
-```
 
 ```{r message = FALSE, warning = FALSE}
 trailInter <- 
