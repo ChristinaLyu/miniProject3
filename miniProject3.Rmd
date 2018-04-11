@@ -15,9 +15,9 @@ xxx+1 for including a catchy and/or engaging title
 xxx+1 for creating a leaflet map
 Average
 +1 for having at least 500 words and no more than 800 words
-+1 for using an appropriate visual mapping (incl. choice of points/lines/polygons, as well as colors and/or icons, etc.)
+xxx+1 for using an appropriate visual mapping (incl. choice of points/lines/polygons, as well as colors and/or icons, etc.)
 +1 for providing a clear, concise description of the data you used
-+1 for using more than one data layer from the macleish package in your analysis (e.g. both vegetation and elevation data)
+xxx+1 for using more than one data layer from the macleish package in your analysis (e.g. both vegetation and elevation data)
 +1 for including relevant external information in your analysis
 +1 for reporting at least one actionable recommendation (what should Smith DO with your findings?)
 xxx+1 for using a GitHub repository and including a link to it in the footnotes
@@ -29,7 +29,7 @@ how long will it take?
 are there any concerns about environmental impact?
 do you see any major roadblocks?
 
-In this project we are trying to be able to make classifications of the trails based on their length and change in elevation. We would also try to make one function that would simplify the process of classification.
+Problem statement: In this project we are trying to be able to make classifications of the trails based on their length and change in elevation. We would also try to make one function that would simplify the process of classification.
 
 ```{r packets, message = FALSE, warning = FALSE}
 library(tidyverse)
