@@ -6,6 +6,7 @@ output:
   html_document:
     code_folding: hide
     df_print: paged
+    theme: cosmo
 ---
 for having an .Rmd that compiles without errors
 xxx+1 unnecessary messages from R are hidden from being displayed in the HTML 
@@ -40,6 +41,7 @@ library(macleish)
 library(leaflet)
 library(dplyr)
 library(lwgeom)
+library(ggplot2)
 ```
 
 Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
@@ -53,31 +55,6 @@ elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 plot(st_geometry(elevation))
 ```
 
-```{r message = FALSE, warning = FALSE}
-devtools::install_github("tidyverse/ggplot2")
-```
-
-
-
-```{r message = FALSE, warning = FALSE}
-library(ggplot2)
-elevation %>%
-  filter()
-```
-```{r message = FALSE, warning = FALSE}
-ggplot(elevation) + 
-  geom_sf(aes(fill = CONTOUR_FT)) + 
-  scale_fill_gradient(low = "#edf8e9", high = "#005a32") 
-ggplot() + 
-  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name))) + 
-  geom_sf(data = macleish_layers[["buildings"]], aes(fill = name))
-```
-```{r message = FALSE, warning = FALSE}
-ggplot() + 
-  geom_sf(data = elevation, aes(fill = CONTOUR_FT)) + 
-  scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
-  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)))
-```
 
 ```{r message = FALSE, warning = FALSE}
 elevation <- st_transform(elevation, 4326)
