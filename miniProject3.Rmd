@@ -47,7 +47,7 @@ elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 plot(st_geometry(elevation))
 ```
 
@@ -69,12 +69,12 @@ leaflet() %>%
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 library(ggplot2)
 elevation %>%
   filter()
 ```
-```{r}
+```{r message = FALSE, warning = FALSE}}
 ggplot(elevation) + 
   geom_sf(aes(fill = CONTOUR_FT)) + 
   scale_fill_gradient(low = "#edf8e9", high = "#005a32") 
@@ -82,14 +82,14 @@ ggplot() +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name))) + 
   geom_sf(data = macleish_layers[["buildings"]], aes(fill = name))
 ```
-```{r}
+```{r message = FALSE, warning = FALSE}}
 ggplot() + 
   geom_sf(data = elevation, aes(fill = CONTOUR_FT)) + 
   scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)))
 ```
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 elevation <- st_transform(elevation, 4326)
 elevInter <- 
   elevation %>%
@@ -101,7 +101,7 @@ ggplot() +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)), lwd = 1.2)
 ```
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = elevInter) %>%
@@ -109,7 +109,7 @@ leaflet() %>%
 ```
 
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 st_transform(elevation, 4326)
 elevation %>%
   st_intersection(macleish_layers[["trails"]])
@@ -182,7 +182,7 @@ elevation <-
   st_intersection(macleish_layers[["trails"]])
 ```
 
-```{r}
+```{r message = FALSE, warning = FALSE}}
 trailInter <- 
   elevation %>%
   st_intersection(macleish_layers[["trails"]])
