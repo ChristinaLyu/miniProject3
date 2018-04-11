@@ -55,6 +55,19 @@ plot(st_geometry(elevation))
 devtools::install_github("tidyverse/ggplot2")
 ```
 
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = macleish_layers[["trails"]], popup = ~name) %>%
+  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
+  addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
+  # ...and an satellite imagery map layer
+  addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
+  # Next you want to add the control to switch between the two
+  addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
+                   options = layersControlOptions(collapsed = F)) 
+```
+
 
 ```{r}
 library(ggplot2)
@@ -76,6 +89,31 @@ ggplot() +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)))
 ```
 
+```{r}
+elevation <- st_transform(elevation, 4326)
+elevInter <- 
+  elevation %>%
+  st_intersection(macleish_layers[["boundary"]])
+
+ggplot() + 
+  geom_sf(data = elevInter, aes(color = factor(CONTOUR_FT), colors = "Set1")) + 
+  scale_fill_gradient(low = "#edf8e9", high = "#005a32") +
+  geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name)), lwd = 1.2)
+```
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = elevInter) %>%
+  addPolylines(macleish_layers[["trails"]])
+```
+
+
+```{r}
+st_transform(elevation, 4326)
+elevation %>%
+  st_intersection(macleish_layers[["trails"]])
+```
 
 
 ```{r message = FALSE, warning = FALSE}
@@ -144,6 +182,15 @@ elevation <-
   st_intersection(macleish_layers[["trails"]])
 ```
 
+```{r}
+trailInter <- 
+  elevation %>%
+  st_intersection(macleish_layers[["trails"]])
+
+trailInter %>%
+  group_by(name) %>%
+  summarise(ele = ifelse(n_distinct(CONTOUR_FT) != 1, sd(CONTOUR_FT), 0))
+```
 
 
 
