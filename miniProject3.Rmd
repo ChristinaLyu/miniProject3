@@ -71,8 +71,8 @@ ggplot() +
 ```{r message = FALSE, warning = FALSE}
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = st_geometry(elevInter)) %>%
-  addPolylines(data = st_geometry(macleish_layers[["trails"]]))
+  addPolylines(data = st_geometry(elevInter), weight = 2) %>%
+  addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color)
 ```
 
 
@@ -148,6 +148,13 @@ trailInter <-
 trailInter %>%
   group_by(name) %>%
   summarise(ele = ifelse(n_distinct(CONTOUR_FT) != 1, sd(CONTOUR_FT), 0))
+```
+
+
+```{r}
+joinTrail <- 
+  macleish_layers[["trails"]] %>%
+  st_join(trailInter)
 ```
 
 
