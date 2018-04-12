@@ -31,7 +31,7 @@ how long will it take?
 are there any concerns about environmental impact?
 do you see any major roadblocks?
 
-Problem statement: In this project we are trying to be able to make classifications of the trails based on their length and change in elevation. We would also try to make one function that would simplify the process of classification.
+Problem statement: In this project we are trying to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification.
 
 ```{r packets, message = FALSE, warning = FALSE}
 #devtools::install_github("beanumber/macleish")
