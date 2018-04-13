@@ -8,7 +8,7 @@ output:
     df_print: paged
     theme: cosmo
 ---
-Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generalize this analysis, we used *boundary*, *buildings* and *trails* layers from macleish package and *contours250k* layer from MassGIS.
+Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generalize this analysis, we used *boundary*, *buildings*, *contours_3m*, and *trails* layers from macleish package and *contours250k* layer from MassGIS.
 
 ```{r packets, message = FALSE, warning = FALSE}
 #devtools::install_github("beanumber/macleish")
@@ -135,5 +135,19 @@ Looking at the two tables, we found that Snowmobile Trail and Western Loop are t
 joinTrail <- 
   macleish_layers[["trails"]] %>%
   st_join(trailInter)
+```
+
+```{r}
+pall <- colorNumeric(palette="viridis",
+                     domain= macleish_layers[["contours_3m"]]$ELEV_M)
+leaflet(data=macleish_layers[["trails"]]) %>%
+  addTiles() %>%
+  addPolylines(data=macleish_layers[["contours_3m"]], 
+               color = ~pall(ELEV_M), 
+               group = "10'Contours", weight = 1) %>%
+  addLegend("bottomleft", pal = pall, 
+            values = ~macleish_layers[["contours_3m"]]$ELEV_M, 
+            title = "Macleish Contour Line in meters") %>%
+  addPolylines(data = macleish_layers[["trails"]], weight = 2)
 ```
 
