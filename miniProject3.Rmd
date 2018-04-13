@@ -8,30 +8,7 @@ output:
     df_print: paged
     theme: cosmo
 ---
-for having an .Rmd that compiles without errors
-xxx+1 unnecessary messages from R are hidden from being displayed in the HTML 
-xxx+1 for using code folding to keep your code hidden, but still make it available.
-xxx+1 for including a problem statement (what are you trying to figure out?)
-xxx+1 for readable, well-documented code (i.e. appropriate comments, using line breaks, breaking code up into logical chunks) that conforms to a style guide
-xxx+1 for including a catchy and/or engaging title
-xxx+1 for creating a leaflet map
-Average
-+1 for having at least 500 words and no more than 800 words
-xxx+1 for using an appropriate visual mapping (incl. choice of points/lines/polygons, as well as colors and/or icons, etc.)
-+1 for providing a clear, concise description of the data you used
-xxx+1 for using more than one data layer from the macleish package in your analysis (e.g. both vegetation and elevation data)
-+1 for including relevant external information in your analysis
-+1 for reporting at least one actionable recommendation (what should Smith DO with your findings?)
-xxx+1 for using a GitHub repository and including a link to it in the footnotes
-Advanced
-xxx+1 for using the Issues tab on GitHub to plan your project
-+1 for including a short discussion on the resources necessary to implement your recommendation:
-what will it cost?
-how long will it take?
-are there any concerns about environmental impact?
-do you see any major roadblocks?
-
-Problem statement: In this project we are trying to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification.
+Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generalize this analysis, we used *boundary*, *buildings* and *trails* layers from macleish package and *contours250k* layer from MassGIS.
 
 ```{r packets, message = FALSE, warning = FALSE}
 #devtools::install_github("beanumber/macleish")
@@ -44,17 +21,17 @@ library(lwgeom)
 library(ggplot2)
 ```
 
-Make an interactive visualization of the MacLeish property. Include layers for buildings,  streams, and trails.
-
 ```{r message = FALSE, warning = FALSE}
 elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
-
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
 plot(st_geometry(elevation))
+
+# add data source
 ```
 
+We first plotted the elevation map of Massachusetts illustrates the number of feet or meters the state rises above sea level. Since the graph plots contours on the map, the denser the contour lines, the higher the place above the sea level. As you can see, the highest point in Massachusetts is in the northwestern part of the state, in Berkshire County, while the eastern third of Massachusetts is relatively lower than the other area.
 
 ```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
 elevation <- st_transform(elevation, 4326)
@@ -75,13 +52,13 @@ leaflet() %>%
   addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color)
 ```
 
+To rate the difficulty of the trail, we want to see the change of elevation. We made a contour map of the MacLeish Field Station, using different colors of lines to represent different contours and plotted the trails on the contour map. In this graph, each intersection of contour lines and trails represents a 30 ft change in elevation of that trail. To see intersections more clearly, we changed the alpha and the size of the lines so that pathways can stand out from the contour lines. To make an interactive visualization of elevation and trails, we created a leaflet map as well.
 
 ```{r message = FALSE, warning = FALSE}
 st_transform(elevation, 4326)
 elevation %>%
   st_intersection(macleish_layers[["trails"]])
 ```
-
 
 ```{r message = FALSE, warning = FALSE}
 #change the color name in Macleish to lower case so that r can understand it
@@ -97,7 +74,6 @@ m <- leaflet() %>%
   addTiles() %>%
   addPolygons(data = macleish_layers[["buildings"]], popup = ~name) %>%
   addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) 
-
 m
 ```
 
@@ -107,12 +83,14 @@ leaflet() %>%
   addPolygons(data = macleish_layers[["trails"]], label = ~name) %>%
   addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  # ...and an satellite imagery map layer
+  # ...and a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
   # Next you want to add the control to switch between the two
   addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
                    options = layersControlOptions(collapsed = F)) 
 ```
+
+To rate the difficulty of the bike trails, we also want to look at the length of each path. To visualize this, we plotted trails on the leaflet map on a topographic imagery map layer, a satellite imagery map layer and an open street imagery layer, and added the control to switch between those three imagery layers.
 
 ```{r message = FALSE, warning = FALSE}
 #calculate each part of the length of the trail
@@ -136,9 +114,7 @@ newTrails %>%
   group_by(name) %>% 
   summarise(total = sum(length)) %>%
   arrange(desc(total))
-
 ```
-
 
 ```{r message = FALSE, warning = FALSE}
 trailInter <- 
@@ -147,9 +123,13 @@ trailInter <-
 
 trailInter %>%
   group_by(name) %>%
-  summarise(ele = ifelse(n_distinct(CONTOUR_FT) != 1, sd(CONTOUR_FT), 0))
+  summarise(ele = ifelse(n_distinct(CONTOUR_FT) != 1, sd(CONTOUR_FT), 0)) %>%
+  arrange(desc(ele))
 ```
 
+We want to look at the exact number of the length and the change in elevation to get a more accurate rating. Therefore, we produced the table *newTrails*  calculate the length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we figured the standard deviation of the elevation of each trail. High standard deviation represents the higher change in elevation and more difficulty, while low standard deviation represents less change in elevation and less difficulty. If a trail doesn't show up in our table, we regarded it as there is no intersection between the contours lines and that trail which means barely any change in elevation. 
+
+Looking at the two tables, we found that Snowmobile Trail and Western Loop are the two largest change in elevation trails and the two longest trails of the all. Therefore, we classified them as in the level of "Difficult." Path Easy Out, Driveway, and entry trail are the three shortest trails. Since they don't show up in the change in elevation table, we believed that those trails have the least changes in elevation. Therefore, we rated these three trails as in the level of "Easy." For the rest of the trails, including Western Loop, Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, we rated them in the level of "Moderate,"
 
 ```{r}
 joinTrail <- 
