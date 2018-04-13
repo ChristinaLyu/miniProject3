@@ -104,7 +104,7 @@ m
 ```{r message = FALSE, warning = FALSE}
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = macleish_layers[["trails"]], popup = ~name) %>%
+  addPolygons(data = macleish_layers[["trails"]], label = ~name) %>%
   addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
   # ...and an satellite imagery map layer
