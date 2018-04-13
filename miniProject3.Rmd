@@ -186,11 +186,21 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addLegend("bottomright", pal = palTrail, 
             values = ~macleish_layers[["trails"]]$level, 
             title = "Difficulty levels for biking") %>%
+  addMeasure() %>%
+  addControl("Macleish Trails Ranked by Difficulty Levels", position = "topleft") %>%
+  addMiniMap(
+    toggleDisplay = TRUE) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
   # ...and a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
   # Next you want to add the control to switch between the two
   addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
-                   options = layersControlOptions(collapsed = F)) 
+                   options = layersControlOptions(collapsed = F)) %>%
+  addEasyButton(easyButton(
+    icon="fa-crosshairs", title="Locate Me",
+    onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
+  
+
+
 ```
 
