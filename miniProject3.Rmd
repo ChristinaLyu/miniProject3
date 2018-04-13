@@ -110,10 +110,11 @@ for (k in 1:nrow(newTrails)){
 }
 
 #get the total length of each trail
-newTrails %>%
+newTrails <- 
+  newTrails %>%
   group_by(name) %>% 
-  summarise(total = sum(length)) %>%
-  arrange(desc(total))
+  summarise(length = sum(length)) %>%
+  arrange(desc(length))
 ```
 
 ```{r message = FALSE, warning = FALSE}
@@ -121,7 +122,8 @@ trailInter <-
   elevation %>%
   st_intersection(macleish_layers[["trails"]])
 
-trailInter %>%
+trailInter <- 
+  trailInter %>%
   group_by(name) %>%
   summarise(ele = ifelse(n_distinct(CONTOUR_FT) != 1, sd(CONTOUR_FT), 0)) %>%
   arrange(desc(ele))
@@ -134,12 +136,44 @@ Looking at the two tables, we found that Snowmobile Trail and Western Loop are t
 ```{r}
 joinTrail <- 
   macleish_layers[["trails"]] %>%
-  st_join(trailInter)
+  st_join(trailInter, join = st_crosses)
+
+newTrailsNone <- 
+  st_set_geometry(newTrails, NULL)
+trailInterNone <- 
+  st_set_geometry(trailInter, NULL)
+
+joined <- 
+  newTrailsNone %>%
+  left_join(trailInterNone, by = "name")
+
+
+joined$ele[is.na(joined$ele)] <- 0
+
+joined <- 
+  joined %>%
+  mutate(difficulty = 0.4 * as.numeric(length) + 0.6 * as.numeric(ele)) %>%
+  arrange(desc(difficulty))
+
+
+joined$ID <- seq.int(nrow(joined))
+
+joined <- 
+  joined %>%
+  mutate(level = ifelse(ID < 4, "hard", ifelse(ID > 6, "easy", "moderate")))
+```
+
+```{r}
+macleish_layers[["trails"]] <- 
+  macleish_layers[["trails"]] %>%
+  inner_join(joined, by = "name")
 ```
 
 ```{r}
 pall <- colorNumeric(palette="viridis",
                      domain= macleish_layers[["contours_3m"]]$ELEV_M)
+palTrail <- colorFactor(c("red", "blue", "black"), domain = macleish_layers[["trails"]]$level)
+
 leaflet(data=macleish_layers[["trails"]]) %>%
   addTiles() %>%
   addPolylines(data=macleish_layers[["contours_3m"]], 
@@ -148,6 +182,15 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addLegend("bottomleft", pal = pall, 
             values = ~macleish_layers[["contours_3m"]]$ELEV_M, 
             title = "Macleish Contour Line in meters") %>%
-  addPolylines(data = macleish_layers[["trails"]], weight = 2, label = ~name)
+  addPolylines(data = macleish_layers[["trails"]], weight = 2, label = ~name, color = ~palTrail(level)) %>%
+  addLegend("bottomright", pal = palTrail, 
+            values = ~macleish_layers[["trails"]]$level, 
+            title = "Difficulty levels for biking") %>%
+  addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
+  # ...and a satellite imagery map layer
+  addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
+  # Next you want to add the control to switch between the two
+  addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
+                   options = layersControlOptions(collapsed = F)) 
 ```
 
