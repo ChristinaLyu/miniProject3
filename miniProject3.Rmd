@@ -1,6 +1,6 @@
 ---
 title: "Discriminating trails to the Macleish center"
-author: "Christina Ly & Caroline Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
+author: "Christina Lyu & Caroline Li (using Github^[Github link: https://github.com/ChristinaLyu/miniProject3.git])"
 date: "3/7/2018"
 output: 
   html_document:
@@ -51,7 +51,8 @@ To rate the difficulty of the trail, we wanted to check the change of elevation.
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = st_geometry(elevInter), weight = 2) %>%
-  addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color)
+  addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color) %>%
+  addProviderTiles(providers$OpenStreetMap)
 ```
 
 ```{r message = FALSE, warning = FALSE}
@@ -74,6 +75,7 @@ leaflet() %>%
   addTiles() %>%
   addPolygons(data = macleish_layers[["trails"]], label = ~name) %>%
   addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
   #a topographic imagery map layer
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
   #a satellite imagery map layer
@@ -179,6 +181,7 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addControl("Macleish Trails Ranked by Difficulty Levels", position = "topleft") %>%
   addMiniMap(
     toggleDisplay = TRUE) %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
   #and a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
@@ -211,6 +214,7 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addControl("Macleish Trails Ranked by Difficulty Levels", position = "topleft") %>%
   addMiniMap(
     toggleDisplay = TRUE) %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
   #a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
