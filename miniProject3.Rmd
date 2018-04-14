@@ -170,7 +170,7 @@ leaflet(data=macleish_layers[["trails"]]) %>%
                group = "Contours Lines", weight = 1) %>%
   addLegend("bottomleft", pal = pall, 
             values = ~elevInter$CONTOUR_FT, 
-            title = "Macleish Contour Line in meters") %>%
+            title = "Macleish Contour Line in feet") %>%
   addPolylines(data = macleish_layers[["trails"]], weight = 2, label = ~name, color = ~palTrail(level), group = "Trails") %>%
   addLegend("bottomright", pal = palTrail, 
             values = ~macleish_layers[["trails"]]$level, 
