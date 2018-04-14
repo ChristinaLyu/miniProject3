@@ -8,7 +8,7 @@ output:
     df_print: paged
     theme: cosmo
 ---
-Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generalize this analysis, we used *boundary*, *buildings*, *contours_3m*, and *trails* layers from macleish package and *contours250k* layer from MassGIS.
+Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generate this analysis, we used *boundary*, *buildings*, *contours_3m*, and *trails* layers from macleish package and *contours250k* layer from MassGIS.
 
 ```{r packets, message = FALSE, warning = FALSE}
 #devtools::install_github("beanumber/macleish")
@@ -21,17 +21,17 @@ library(lwgeom)
 library(ggplot2)
 ```
 
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, results = 'hide'}
 elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
-```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
+```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=6}
 plot(st_geometry(elevation))
 
 # add data source
 ```
 
-We first plotted the elevation map of Massachusetts illustrates the number of feet or meters the state rises above sea level. Since the graph plots contours on the map, the denser the contour lines, the higher the place above the sea level. As you can see, the highest point in Massachusetts is in the northwestern part of the state, in Berkshire County, while the eastern third of Massachusetts is relatively lower than the other area.
+We first plotted the elevation map of Massachusetts illustrating the number of feet or meters the state rises above sea level. Since the graph plots contours on the map, the denser the contour lines, the higher the place above the sea level. The highest point in Massachusetts is in the northwestern part of the state, in Berkshire County, while the eastern third of Massachusetts is relatively lower than the other area.
 
 ```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
 elevation <- st_transform(elevation, 4326)
@@ -40,10 +40,12 @@ elevInter <-
   st_intersection(macleish_layers[["boundary"]])
 
 ggplot() + 
-  geom_sf(data = elevInter, aes(color = factor(CONTOUR_FT), colors = "Set1")) + 
+  geom_sf(data = elevInter, aes(color = factor(CONTOUR_FT), colors = "Set1")) +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name), alpha = 0.8, lwd = 1.2)) +
   theme(legend.text=element_text(size=15))
 ```
+
+To rate the difficulty of the trail, we wanted to check the change of elevation. We made a contour map of the MacLeish Field Station, using different colors of lines to represent different contours and plotted the trails on the contour map. In this graph, each intersection of contour lines and trails represents a 30 ft change in elevation of that trail. To see intersections more clearly, we changed the alpha and the size of the lines so that pathways can stand out from the contour lines. We created a leaflet map to make an interactive visualization of elevation and trails as follows.
 
 ```{r message = FALSE, warning = FALSE}
 leaflet() %>%
@@ -51,8 +53,6 @@ leaflet() %>%
   addPolylines(data = st_geometry(elevInter), weight = 2) %>%
   addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color)
 ```
-
-To rate the difficulty of the trail, we want to see the change of elevation. We made a contour map of the MacLeish Field Station, using different colors of lines to represent different contours and plotted the trails on the contour map. In this graph, each intersection of contour lines and trails represents a 30 ft change in elevation of that trail. To see intersections more clearly, we changed the alpha and the size of the lines so that pathways can stand out from the contour lines. To make an interactive visualization of elevation and trails, we created a leaflet map as well.
 
 ```{r message = FALSE, warning = FALSE}
 st_transform(elevation, 4326)
@@ -69,28 +69,21 @@ markers <-
   macleish_layers[["trails"]] %>%
   group_by(name) %>%
   filter(geometry == min(geometry))
-#interactive map with buildings and the trails in Macleish
-m <- leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = macleish_layers[["buildings"]], popup = ~name) %>%
-  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) 
-m
-```
-
-```{r message = FALSE, warning = FALSE}
+#interactive map with trails in Macleish
 leaflet() %>%
   addTiles() %>%
   addPolygons(data = macleish_layers[["trails"]], label = ~name) %>%
   addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
+  #a topographic imagery map layer
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  # ...and a satellite imagery map layer
+  #a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
-  # Next you want to add the control to switch between the two
+  #add the control to switch between the two
   addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
                    options = layersControlOptions(collapsed = F)) 
 ```
 
-To rate the difficulty of the bike trails, we also want to look at the length of each path. To visualize this, we plotted trails on the leaflet map on a topographic imagery map layer, a satellite imagery map layer and an open street imagery layer, and added the control to switch between those three imagery layers.
+We also wanted to look at the length of each path. To visualize this, we plotted trails on the leaflet map on a topographic imagery map layer, a satellite imagery map layer and an open street imagery layer, and added the control to switch between those three imagery layers.
 
 ```{r message = FALSE, warning = FALSE}
 #calculate each part of the length of the trail
@@ -129,9 +122,7 @@ trailInter <-
   arrange(desc(ele))
 ```
 
-We want to look at the exact number of the length and the change in elevation to get a more accurate rating. Therefore, we produced the table *newTrails*  calculate the length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we figured the standard deviation of the elevation of each trail. High standard deviation represents the higher change in elevation and more difficulty, while low standard deviation represents less change in elevation and less difficulty. If a trail doesn't show up in our table, we regarded it as there is no intersection between the contours lines and that trail which means barely any change in elevation. 
-
-Looking at the two tables, we found that Snowmobile Trail and Western Loop are the two largest change in elevation trails and the two longest trails of the all. Therefore, we classified them as in the level of "Difficult." Path Easy Out, Driveway, and entry trail are the three shortest trails. Since they don't show up in the change in elevation table, we believed that those trails have the least changes in elevation. Therefore, we rated these three trails as in the level of "Easy." For the rest of the trails, including Western Loop, Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, we rated them in the level of "Moderate,"
+We wanted to look at the exact number of the length and the change in elevation to get a more accurate rating. Therefore, we generated the table *newTrails* to calculate the total length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we computed the standard deviation of the elevation of each trail. Higher standard deviation represents more changes in elevation and higher level of difficulty, while lower standard deviation represents less changes in elevation and lower level of difficulty. If a trail doesn't show up in the *trailInter* table, we would regard it as there is no intersection between the contour lines and that trail which means there is barely no change in elevation. 
 
 ```{r}
 joinTrail <- 
@@ -147,14 +138,12 @@ joined <-
   newTrailsNone %>%
   left_join(trailInterNone, by = "name")
 
-
 joined$ele[is.na(joined$ele)] <- 0
 
 joined <- 
   joined %>%
   mutate(difficulty = 0.4 * as.numeric(length) + 0.6 * as.numeric(ele)) %>%
   arrange(desc(difficulty))
-
 
 joined$ID <- seq.int(nrow(joined))
 
@@ -191,17 +180,14 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addMiniMap(
     toggleDisplay = TRUE) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  # ...and a satellite imagery map layer
+  #and a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
-  # Next you want to add the control to switch between the two
+  #add the control to switch between the two
   addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
                    options = layersControlOptions(collapsed = F)) %>%
   addEasyButton(easyButton(
     icon="fa-crosshairs", title="Locate Me",
     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
-  
-
-
 ```
 
 ```{r}
@@ -226,13 +212,15 @@ leaflet(data=macleish_layers[["trails"]]) %>%
   addMiniMap(
     toggleDisplay = TRUE) %>%
   addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  # ...and a satellite imagery map layer
+  #a satellite imagery map layer
   addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
-  # Next you want to add the control to switch between the two
+  #add the control to switch between the two
   addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
                    options = layersControlOptions(collapsed = F)) %>%
   addEasyButton(easyButton(
     icon="fa-crosshairs", title="Locate Me",
     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
 ```
+
+We then joined *newTrails* and *trailInter* together, caluculating the difficulty following the formula $diffculty = 0.4 \cdot length+ 0.6\cdot ele$ Considering it's more diffcult to ride uphills than the flat, we assigned 0.4 for length and 0.6 for the standard deviation of elevation. We ranked the difficulty, for the three trails with the highest degrees of difficulty, which are Snowmobile Trail, Eastern Loop, and Western Loop, we rated them as in the level of “Difficult.” For the three trails with the lowest level of difficulty, which are entry trail, Driveway, Easy Out, we classified them in the level of "Easy." And the rest of three trails, which are Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, we rated them in the level of "Moderate."
 
