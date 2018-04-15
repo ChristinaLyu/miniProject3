@@ -22,23 +22,24 @@ library(ggplot2)
 ```
 
 ```{r message = FALSE, warning = FALSE, results = 'hide'}
+#read contours250k file
 elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
 ```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=6}
+#plot the elevation data
 plot(st_geometry(elevation))
-
-# add data source
 ```
 
-We first plotted the elevation map of Massachusetts illustrating the number of feet or meters the state rises above sea level. Since the graph plots contours on the map, the denser the contour lines, the higher the place above the sea level. The highest point in Massachusetts is in the northwestern part of the state, in Berkshire County, while the eastern third of Massachusetts is relatively lower than the other area.
+We first plotted the elevation map of Massachusetts illustrating the number of feet or meters the state rises above sea level.
 
 ```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
+#intersect the elevation data and the macleish_layers[["boundary"]] to get the elevation data for the macleish area
 elevation <- st_transform(elevation, 4326)
 elevInter <- 
   elevation %>%
   st_intersection(macleish_layers[["boundary"]])
-
+#plot the elevation layer and the macleish trails layer together in the ggplot
 ggplot() + 
   geom_sf(data = elevInter, aes(color = factor(CONTOUR_FT), colors = "Set1")) +
   geom_sf(data = macleish_layers[["trails"]], aes(color = factor(name), alpha = 0.8, lwd = 1.2)) +
@@ -47,7 +48,8 @@ ggplot() +
 
 To rate the difficulty of the trail, we wanted to check the change of elevation. We made a contour map of the MacLeish Field Station, using different colors of lines to represent different contours and plotted the trails on the contour map. In this graph, each intersection of contour lines and trails represents a 30 ft change in elevation of that trail. To see intersections more clearly, we changed the alpha and the size of the lines so that pathways can stand out from the contour lines. We created a leaflet map to make an interactive visualization of elevation and trails as follows.
 
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, fig.width=15}
+#plot the elevation data and the trails in an open street map in leaflet
 leaflet() %>%
   addTiles() %>%
   addPolylines(data = st_geometry(elevInter), weight = 2) %>%
@@ -55,39 +57,13 @@ leaflet() %>%
   addProviderTiles(providers$OpenStreetMap)
 ```
 
-```{r message = FALSE, warning = FALSE}
-st_transform(elevation, 4326)
-elevation %>%
-  st_intersection(macleish_layers[["trails"]])
-```
+
 
 ```{r message = FALSE, warning = FALSE}
-#change the color name in Macleish to lower case so that r can understand it
+#change the color name in macleish trails
 newTrails <- macleish_layers[["trails"]] %>%
   mutate(colorName = tolower(color))
 
-markers <- 
-  macleish_layers[["trails"]] %>%
-  group_by(name) %>%
-  filter(geometry == min(geometry))
-#interactive map with trails in Macleish
-leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = macleish_layers[["trails"]], label = ~name) %>%
-  addPolylines(data = newTrails, weight = 3, color = newTrails$colorName) %>%
-  addProviderTiles(providers$OpenStreetMap) %>%
-  #a topographic imagery map layer
-  addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>% 
-  #a satellite imagery map layer
-  addProviderTiles("Esri.WorldImagery", group = "Sat") %>%
-  #add the control to switch between the two
-  addLayersControl(baseGroups = c("OpenSreetMap", "Topo","Sat"),
-                   options = layersControlOptions(collapsed = F)) 
-```
-
-We also wanted to look at the length of each path. To visualize this, we plotted trails on the leaflet map on a topographic imagery map layer, a satellite imagery map layer and an open street imagery layer, and added the control to switch between those three imagery layers.
-
-```{r message = FALSE, warning = FALSE}
 #calculate each part of the length of the trail
 length <- 
   macleish_layers[["trails"]] %>%
@@ -113,10 +89,11 @@ newTrails <-
 ```
 
 ```{r message = FALSE, warning = FALSE}
+#intersect elevation with trails to get the change of trails in the contour line
 trailInter <- 
   elevation %>%
   st_intersection(macleish_layers[["trails"]])
-
+#the trails with NA has a change in elevation of 0
 trailInter <- 
   trailInter %>%
   group_by(name) %>%
@@ -127,6 +104,7 @@ trailInter <-
 We wanted to look at the exact number of the length and the change in elevation to get a more accurate rating. Therefore, we generated the table *newTrails* to calculate the total length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we computed the standard deviation of the elevation of each trail. Higher standard deviation represents more changes in elevation and higher level of difficulty, while lower standard deviation represents less changes in elevation and lower level of difficulty. If a trail doesn't show up in the *trailInter* table, we would regard it as there is no intersection between the contour lines and that trail which means there is barely no change in elevation. 
 
 ```{r}
+#build the joined data frame with the level
 joinTrail <- 
   macleish_layers[["trails"]] %>%
   st_join(trailInter, join = st_crosses)
@@ -155,16 +133,19 @@ joined <-
 ```
 
 ```{r}
+joined
+#add the different levels to the macleish trails
 macleish_layers[["trails"]] <- 
   macleish_layers[["trails"]] %>%
   inner_join(joined, by = "name")
 ```
 
 ```{r}
+#set color palette
 pall <- colorNumeric(palette="viridis",
                      domain= elevInter$CONTOUR_FT)
 palTrail <- colorFactor(c("red", "blue", "black"), domain = macleish_layers[["trails"]]$level)
-
+#plot contour line and trails with leaflet
 leaflet(data=macleish_layers[["trails"]]) %>%
   addTiles() %>%
   addPolylines(data=elevInter, 
@@ -194,10 +175,12 @@ leaflet(data=macleish_layers[["trails"]]) %>%
 ```
 
 ```{r}
+#set color palette for contour lines
 pall2 <- colorNumeric(palette="viridis",
                      domain= macleish_layers[["contours_3m"]]$ELEV_M)
+#set color palette for different types of trails
 palTrail <- colorFactor(c("red", "blue", "black"), domain = macleish_layers[["trails"]]$level)
-
+#plot the graph with trails and contours line with leaflet
 leaflet(data=macleish_layers[["trails"]]) %>%
   addTiles() %>%
   addPolylines(data=macleish_layers[["contours_3m"]], 
@@ -225,6 +208,7 @@ leaflet(data=macleish_layers[["trails"]]) %>%
     icon="fa-crosshairs", title="Locate Me",
     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
 ```
+
 
 We then joined *newTrails* and *trailInter* together, caluculating the difficulty following the formula $diffculty = 0.4 \cdot length+ 0.6\cdot ele$ Considering it's more diffcult to ride uphills than the flat, we assigned 0.4 for length and 0.6 for the standard deviation of elevation. We ranked the difficulty, for the three trails with the highest degrees of difficulty, which are Snowmobile Trail, Eastern Loop, and Western Loop, we rated them as in the level of “Difficult.” For the three trails with the lowest level of difficulty, which are entry trail, Driveway, Easy Out, we classified them in the level of "Easy." And the rest of three trails, which are Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, we rated them in the level of "Moderate."
 
