@@ -27,13 +27,6 @@ library(ggplot2)
 elevation <- st_read("contours250k/CONTOURS250K_ARC.shp")
 ```
 
-```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=6}
-#plot the elevation data
-plot(st_geometry(elevation))
-```
-
-We first plotted the elevation map of Massachusetts illustrating the number of feet or meters the state rises above sea level.
-
 ```{r message = FALSE, warning = FALSE, fig.width=9, fig.height=12}
 #intersect the elevation data and the macleish_layers[["boundary"]] to get the elevation data for the macleish area
 elevation <- st_transform(elevation, 4326)
