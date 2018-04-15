@@ -8,6 +8,7 @@ output:
     df_print: paged
     theme: cosmo
 ---
+
 Problem statement: In this project, we tried to make classifications of the trails based on their length and change in elevation. We also made one function that would simplify the process of classification. To generate this analysis, we used *boundary*, *buildings*, *contours_3m*, and *trails* layers from macleish package and *contours250k* layer from MassGIS.
 
 ```{r packets, message = FALSE, warning = FALSE}
@@ -46,7 +47,7 @@ ggplot() +
   theme(legend.text=element_text(size=15))
 ```
 
-To rate the difficulty of the trail, we wanted to check the change of elevation. We made a contour map of the MacLeish Field Station, using different colors of lines to represent different contours and plotted the trails on the contour map. In this graph, each intersection of contour lines and trails represents a 30 ft change in elevation of that trail. To see intersections more clearly, we changed the alpha and the size of the lines so that pathways can stand out from the contour lines. We created a leaflet map to make an interactive visualization of elevation and trails as follows.
+To rate the difficulty of the trail, we wanted to check the change of elevation. We made a contour map of the MacLeish Field Station, using different colors to represent different contours levels and different trails. In this graph, each two consecutive contour lines represent a 30 ft change in elevation. To see the trails more clearly, we changed the alpha and the size so that pathways can stand out from the contour lines. We created a leaflet map to make an interactive visualization of elevation and trails as follows.
 
 ```{r message = FALSE, warning = FALSE, fig.width=9.5}
 #plot the elevation data and the trails in an open street map in leaflet
@@ -56,8 +57,6 @@ leaflet() %>%
   addPolylines(data = st_geometry(macleish_layers[["trails"]]), color = macleish_layers[["trails"]]$color) %>%
   addProviderTiles(providers$OpenStreetMap)
 ```
-
-
 
 ```{r message = FALSE, warning = FALSE}
 #change the color name in macleish trails
@@ -101,7 +100,7 @@ trailInter <-
   arrange(desc(ele))
 ```
 
-We wanted to look at the exact number of the length and the change in elevation to get a more accurate rating. Therefore, we generated the table *newTrails* to calculate the total length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we computed the standard deviation of value of the contour intersection between the elevation data and the macleish trail data for each trail. Higher standard deviation represents more changes in elevation and higher level of difficulty, while lower standard deviation represents less changes in elevation and lower level of difficulty. If a trail doesn't show up in the *trailInter* table, we would regard it as there is no intersection between the contour lines and that trail which means there is barely any change in elevation. 
+We wanted to look at the exact total length and the change in elevation to rate more accurately. Therefore, we generated the table *newTrails* to calculate the total length of each path and the table *trailInter* to calculate the change in elevation. For the elevation change, we computed the standard deviation of the contour value based on the intersections between the elevation data and the macleish trail data for each trail. Higher standard deviation represents larger changes in elevation and a higher level of difficulty. If a trail doesn't show up in the *trailInter* table, which means there is no intersection between the contour lines and that trail, we will regard it as that trail barely changes elevation. 
 
 ```{r message = FALSE, warning = FALSE}
 #build the joined data frame with the level
@@ -129,7 +128,7 @@ joined$ID <- seq.int(nrow(joined))
 
 joined <- 
   joined %>%
-  mutate(level = ifelse(ID < 4, "hard", ifelse(ID > 6, "easy", "moderate")))
+  mutate(level = ifelse(ID < nrow(joined)/3 + 1, "hard", ifelse(ID > 2*nrow(joined)/3, "easy", "moderate")))
 ```
 
 ```{r message = FALSE, warning = FALSE}
@@ -140,7 +139,7 @@ macleish_layers[["trails"]] <-
   inner_join(joined, by = "name")
 ```
 
-We then joined *newTrails* and *trailInter* together, caluculating the difficulty following the formula $diffculty = 0.4 \cdot length+ 0.6\cdot ele$ Considering it's more diffcult to ride uphills than the flat, we assigned 0.4 for length and 0.6 for the standard deviation of elevation. We ranked the difficulty, for the three trails with the highest degrees of difficulty, which are Snowmobile Trail, Eastern Loop, and Western Loop, we rated them as in the level of “Difficult.” For the three trails with the lowest level of difficulty, which are entry trail, Driveway, Easy Out, we classified them in the level of "Easy." And the rest of three trails, which are Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, we rated them in the level of "Moderate."
+We then joined *newTrails* and *trailInter* together, calculating the difficulty following the formula $diffculty = 0.4 \cdot length+ 0.6\cdot ele$ Considering riding uphills is more difficult than riding flat, we assigned the level of significance to be 0.4 for length and 0.6 for the standard deviation of elevation. We ranked the difficulty, and assigned the top 1/3 in the ranking with "high" level, which are Snowmobile Trail, Eastern Loop, and Western Loop, the middle 1/3 as "moderate", which are Poplar Hill Road, Porcupine Trail, and Vernal Pool Loop, and the bottom 1/3 as "easy", which are entry trail, Driveway, Easy Out. 
 
 ```{r message = FALSE, warning = FALSE, fig.width=9.5}
 #set color palette
@@ -211,8 +210,8 @@ leaflet(data=macleish_layers[["trails"]]) %>%
     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
 ```
 
-To visualize the trails regrading their difficulty on a interactive map, we changed the color of easy trails to red, the color of moderate trails to black, and the color of hard trails to blue. We added labels instead of popups to each trail so that other people viewing our maps can see the name of the trail by simply moving the mouse onto the trail and the pop-up markers don't block the other trails. We also changed the color of contour lines to visualize the change in elevation: the lowest would be in yellow and the highest would be in purple. We made two maps using data from contours250k and macleish layer contours_3m. In the map, the mini map can be minimized, and a locate_me button to show the position of the current viewer so that the viewer can see the distance between his or her current location and the macleish center.
+To visualize the trails regarding their difficulty on an interactive map, we assigned colors respectively to level "hard," "easy," "moderate" to red, blue, black. We added labels instead of popups to each trail so that the name of a trail would display when the mouse is placed on it and doesn't block the map. We also assigned color palette to contour lines to visualize the change in elevation: the lowest would be in yellow and the highest would be in purple. We made two maps using data from contours250k and macleish layer contours_3m respectively. In the map, the minimap can be minimized, and a locate_me button to show the position of the current viewer so that the viewer can see the distance between his or her current location and the macleish center.
 
-We believe that Smith can use our classification in forming orientation group. **Ride** is one of the most popular outdoor orientation groups. Participants bike following the Norwottuck and Manhan Rail Trails and explore Mount Tom State Reservation. However, people with different background may feel the routes differently. For me, I don't have much experience riding bicycles and I was really exhausted during that two days. But some people may feel pretty easy, and they have to stop to wait for other people. So I would suggest that Smith offers two orientation group for **Ride**, **Ride I** and **Ride II**. **Ride I** is for people don't exercise much and don't have much experience biking, while **Ride II** is for experienced bikers who are confident with riding uphills. **Ride I** can choose a trail in the moderate level, and **Ride II** can choose a trail in hard level. So people can choose the group that fits them well and it's also a good opportunity for Smith to introduce Macleish field station to new-comers.
+Smith can use our classification in forming orientation group. **Riding** is one of the most popular outdoor orientation groups. Participants bike down the trails and explore Mount Tom State Reservation. However, people with different backgrounds may feel about the routes differently. Some would consider the trail easy; others might be exhausted after the trip. So I would suggest that Smith offers two groups for **Riding**: **Ride I** and **Ride II**. **Ride I** explores the easy/moderate level trails for people don't have much experience biking, while **Ride II** goes down the moderate/hard level trails for experienced bikers who are confident with riding uphills so that people can choose the group that fits them well and enjoy the Macleish field station.
 
-The distance between Smith College and Macleish field station is roughly 17.4 km, while the average length of the trails in difficult level is 2km. Since the average bike speed is 15.5 km/h, even though speed may vary according to the condition of the trail, we can assume that it takes no more than 2.5 hours for one way, which is a preferable time for a one-day bike trip. The implementation of the bike trail would also reduce the carbon footprint of the students since they are biking instead of taking the bus or driving, so it would have a positive influence on the environment. However, it is not possible for everyone to bike non-stop for 2 hours, so I encourage Smith to install water fountain and little gazebos alone the way so that the bikers can take the rest they need and continue the journey energetically.
+The distance between Smith College and Macleish field station is roughly 17.4 km, while the average length of the trails is 2km. With an average speed of 15.5 km/h, although speed may vary according to the difficulty levels of the trails, we can assume that each route takes no more than 2.5 hours, which is an appropriate duration for a one-day bike trip. The implementation of the bike trail would also reduce the carbon footprint of the students since they are biking instead of taking the bus or driving so that it would have a positive influence on the environment. However, it is not possible for everyone to bike non-stop for 2 hours, so I encourage Smith to install water fountain and little gazebos alone the way so that the bikers can take the rest they need and continue the journey energetically.
